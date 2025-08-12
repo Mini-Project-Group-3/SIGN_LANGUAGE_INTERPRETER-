@@ -5,9 +5,8 @@ import os
 import numpy as np
 from ultralytics import YOLO
 
-# Load YOLO model
-# You can train your own hand detector or use a pre-trained one
-model = YOLO("ISL.pt")  # Change path to your hand detection model
+
+model = YOLO("ISL.pt")
 
 # Parameters
 offset = 20
@@ -27,20 +26,18 @@ while True:
     results = model(img)
     annotated_frame = results[0].plot()
 
-    # Iterate over detected hands
     for box in results[0].boxes:
         cls_id = int(box.cls[0])
         conf = float(box.conf[0])
 
-        # You can check class name if model detects multiple objects
-        if conf > 0.5:  # Confidence threshold
+        if conf > 0.5: 
             x1, y1, x2, y2 = map(int, box.xyxy[0])
             w, h = x2 - x1, y2 - y1
 
             # Prepare white background
             imgWhite = np.ones((imgSize, imgSize, 3), np.uint8) * 255
 
-            # Clip coordinates to avoid errors
+            
             x1c = max(0, x1 - offset)
             y1c = max(0, y1 - offset)
             x2c = min(img.shape[1], x2 + offset)
