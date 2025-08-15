@@ -1,32 +1,55 @@
 import cv2
-import os
+from cvzone.HandTrackingModule import HandDetector
+import numpy as np
+import math
+import time
 
-folder_name = "DATA"
-os.makedirs(folder_name, exist_ok=True)
+#use these commands in terminal to install required libraries 
+#pip install mediapipe opencv-python cvzone
 
-cam = cv2.VideoCapture(0)
-cv2.namedWindow("test")
+cap = cv2.VideoCapture(0)
+detector = HandDetector(maxHands=2)
+offset = 20
+imgSize = 300
+counter = 0
 
-img_counter = 0
-
+folder = "Folder Name Here"
 while True:
-    ret, frame = cam.read()
-    if not ret:
-        print("Failed to grab frame")
-        break
-    cv2.imshow("test", frame)
+    success, img = cap.read()
+    hands, img = detector.findHands(img)
+    if hands:
+        hand = hands[0]
+        x, y, w, h = hand['bbox']
 
-    k = cv2.waitKey(1)
-    if k % 256 == 27:
-        # ESC to exit the loop
-        print("Escape hit, closing...")
-        break
-    elif k % 256 == 32:
-        # SPACE to capture
-        img_name = os.path.join(folder_name, f"opencv_frame_{img_counter}.png")
-        cv2.imwrite(img_name, frame)
-        print(f"{img_name} written!")
-        img_counter += 1
+        imgWhite = np.ones((imgSize, imgSize, 3), np.uint8)*255
 
-cam.release()
-cv2.destroyAllWindows()
+        imgCrop = img[y-offset:y + h + offset, x-offset:x + w + offset]
+        imgCropShape = imgCrop.shape
+
+        aspectRatio = h / w
+
+        if aspectRatio > 1:
+            k = imgSize / h
+            wCal = math.ceil(k * w)
+            imgResize = cv2.resize(imgCrop,(wCal, imgSize))
+            imgResizeShape = imgResize.shape
+            wGap = math.ceil((imgSize-wCal)/2)
+            imgWhite[:, wGap: wCal + wGap] = imgResize
+
+        else:
+            k = imgSize / w
+            hCal = math.ceil(k * h)
+            imgResize = cv2.resize(imgCrop, (imgSize, hCal))
+            imgResizeShape = imgResize.shape
+            hGap = math.ceil((imgSize - hCal) / 2)
+            imgWhite[hGap: hCal + hGap, :] = imgResize
+
+        cv2.imshow('ImageCrop', imgCrop)
+        cv2.imshow('ImageWhite', imgWhite)
+
+    cv2.imshow('Image', img)
+    key = cv2.waitKey(1)
+    if key == ord("s"):
+        counter += 1
+        cv2.imwrite(f'{folder}/Image_{time.time()}.jpg', imgWhite)
+        print(counter)
