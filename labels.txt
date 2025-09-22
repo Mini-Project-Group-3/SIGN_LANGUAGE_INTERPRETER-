@@ -1,0 +1,19 @@
+0 Deaf
+1 Woman
+2 Man
+3 You
+4 Indian
+5 घ 
+6 फ 
+7 Hello
+8 Thank You 
+9 ग
+10 उ 
+11 ई 
+12 इ
+13 ख 
+14 ऊ
+15 अ 
+16 ऐ 
+17 ए 
+18 आ 
